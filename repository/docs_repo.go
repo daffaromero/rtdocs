@@ -9,7 +9,7 @@ import (
 type DocumentRepository interface {
 	GetDocument(ctx context.Context, id string) (*model.Document, error)
 	GetAllDocuments(ctx context.Context) ([]*model.Document, error)
-	SaveDocument(ctx context.Context, document *model.Document) error
+	SaveDocument(ctx context.Context, document *model.Document) (*model.Document, error)
 }
 
 type documentRepository struct {
@@ -30,6 +30,6 @@ func (r *documentRepository) GetAllDocuments(ctx context.Context) ([]*model.Docu
 	return r.docQuery.GetAllDocuments(ctx)
 }
 
-func (r *documentRepository) SaveDocument(ctx context.Context, document *model.Document) error {
+func (r *documentRepository) SaveDocument(ctx context.Context, document *model.Document) (*model.Document, error) {
 	return r.docQuery.SaveDocument(ctx, document)
 }

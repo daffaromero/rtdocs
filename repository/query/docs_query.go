@@ -14,7 +14,7 @@ import (
 type DocumentQuery interface {
 	GetDocument(ctx context.Context, id string) (*model.Document, error)
 	GetAllDocuments(ctx context.Context) ([]*model.Document, error)
-	SaveDocument(ctx context.Context, document *model.Document) error
+	SaveDocument(ctx context.Context, document *model.Document) (*model.Document, error)
 }
 
 type documentQuery struct {
@@ -64,15 +64,15 @@ func (q *documentQuery) GetAllDocuments(ctx context.Context) ([]*model.Document,
 	return documents, nil
 }
 
-func (q *documentQuery) SaveDocument(ctx context.Context, document *model.Document) error {
+func (q *documentQuery) SaveDocument(ctx context.Context, document *model.Document) (*model.Document, error) {
 	if document.ID == "" {
 		log.Println("Document ID is required")
-		return nil
+		return nil, errors.New("document ID is required")
 	}
 
 	query := "INSERT INTO docs (id, title, content) VALUES ($1, $2, $3) ON CONFLICT(id) DO UPDATE SET content = $2 RETURNING id, title, content"
 	if err := q.db.QueryRow(ctx, query, document.ID, document.Title, document.Content).Scan(&document.ID, &document.Title, &document.Content); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return document, nil
 }

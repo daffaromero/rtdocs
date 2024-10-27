@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"rtdocs/config"
 	"rtdocs/controller"
+	"rtdocs/middleware"
 	"rtdocs/repository"
 	"rtdocs/repository/query"
 	"rtdocs/service"
@@ -35,8 +36,11 @@ func main() {
 	http.HandleFunc("/api/documents", docsController.GetAllDocuments)
 	http.HandleFunc("/api/document/save", docsController.UpdateDocumentContent)
 
+	// Wrap the HTTP handler with the CORS middleware
+	corsHandler := middleware.CORSMiddleware(http.DefaultServeMux)
+
 	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", corsHandler); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }

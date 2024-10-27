@@ -25,14 +25,6 @@ var (
 
 func NewPostgresDatabase() *pgxpool.Pool {
 	logger := utils.NewLogger()
-	fmt.Println("DB_HOST:", host)
-	fmt.Println("DB_PORT:", port)
-	fmt.Println("DB_USERNAME:", username)
-	fmt.Println("DB_PASSWORD:", password)
-	fmt.Println("DB_NAME:", dbName)
-	fmt.Println("DB_MIN_CONNS:", minConns)
-	fmt.Println("DB_MAX_CONNS:", maxConns)
-	fmt.Println("DB_CONNECTION_TIMEOUT:", TimeOutDuration)
 
 	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", username, password, host, port, dbName)
 

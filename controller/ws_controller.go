@@ -64,10 +64,6 @@ func (c *webSocketController) HandleConnections(w http.ResponseWriter, r *http.R
 			Title:   "New Document",
 			Content: "",
 		}
-		if err := c.docService.UpdateDocumentContent(ctx, document); err != nil {
-			log.Printf("Failed to create new document: %v", err)
-			return
-		}
 	}
 
 	initialState := map[string]string{
@@ -104,7 +100,7 @@ func (c *webSocketController) HandleConnections(w http.ResponseWriter, r *http.R
 		updatedDoc.Content = document.Content
 
 		// Update the document and broadcast the new content
-		if err = c.docService.UpdateDocumentContent(ctx, &updatedDoc); err != nil {
+		if _, err = c.docService.UpdateDocumentContent(ctx, &updatedDoc); err != nil {
 			log.Printf("Failed to update document: %v", err)
 		}
 

@@ -64,15 +64,13 @@ func (c *documentController) UpdateDocumentContent(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if document.ID == "" {
-		http.Error(w, "Document ID is required", http.StatusBadRequest)
-		return
-	}
-
-	if err := c.docService.UpdateDocumentContent(ctx, &document); err != nil {
+	createdDoc, err := c.docService.UpdateDocumentContent(ctx, &document)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(createdDoc)
 }

@@ -32,15 +32,16 @@ func main() {
 	http.HandleFunc("/ws", wsController.HandleConnections)
 
 	// Set up HTTP handlers for document operations
-	http.HandleFunc("/api/document", docsController.GetDocument)
 	http.HandleFunc("/api/documents", docsController.GetAllDocuments)
+	http.HandleFunc("/api/document/{id}", docsController.GetDocument)
 	http.HandleFunc("/api/document/save", docsController.UpdateDocumentContent)
 
-	// Wrap the HTTP handler with the CORS middleware
+	// Wrap the HTTP handler with the middlewares
 	corsHandler := middleware.CORSMiddleware(http.DefaultServeMux)
+	authHandler := middleware.AuthMiddleware(corsHandler)
 
 	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", corsHandler); err != nil {
+	if err := http.ListenAndServe(":8080", authHandler); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }

@@ -16,8 +16,7 @@ func main() {
 	dbConfig := config.NewPostgresDatabase()
 
 	// Set up dependencies
-	docsQuery := query.NewDocumentQuery(dbConfig)
-	docsRepo := repository.NewDocumentRepository(docsQuery)
+	docsRepo := repository.NewDocumentRepository(dbConfig)
 	docsService := service.NewDocumentService(docsRepo)
 	docsController := controller.NewDocumentController(docsService)
 	wsController := controller.NewWebSocketController(docsService)

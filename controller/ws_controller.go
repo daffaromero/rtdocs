@@ -100,7 +100,7 @@ func (c *webSocketController) HandleConnections(w http.ResponseWriter, r *http.R
 		updatedDoc.Content = document.Content
 
 		// Update the document and broadcast the new content
-		if _, err = c.docService.UpdateDocumentContent(ctx, &updatedDoc); err != nil {
+		if _, err = c.docService.UpdateDocument(ctx, &updatedDoc); err != nil {
 			log.Printf("Failed to update document: %v", err)
 		}
 

@@ -8,7 +8,6 @@ import (
 	"rtdocs/controller"
 	"rtdocs/middleware"
 	"rtdocs/repository"
-	"rtdocs/repository/query"
 	"rtdocs/service"
 )
 
@@ -34,7 +33,8 @@ func main() {
 	// Set up HTTP handlers for document operations
 	http.HandleFunc("/api/documents", docsController.GetAllDocuments)
 	http.HandleFunc("/api/document/{id}", docsController.GetDocument)
-	http.HandleFunc("/api/document/save", docsController.UpdateDocumentContent)
+	http.HandleFunc("/api/document/create", docsController.CreateDocument)
+	http.HandleFunc("/api/document/save", docsController.UpdateDocument)
 
 	// Wrap the HTTP handler with the middlewares
 	corsHandler := middleware.CORSMiddleware(http.DefaultServeMux)

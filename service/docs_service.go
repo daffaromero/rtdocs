@@ -11,7 +11,8 @@ import (
 type DocumentService interface {
 	GetDocument(ctx context.Context, id string) (*model.Document, error)
 	GetAllDocuments(ctx context.Context) ([]*model.Document, error)
-	UpdateDocumentContent(ctx context.Context, updatedDoc *model.Document) (*model.Document, error)
+	CreateDocument(ctx context.Context, newDoc *model.Document) (*model.Document, error)
+	UpdateDocument(ctx context.Context, updatedDoc *model.Document) (*model.Document, error)
 }
 
 type documentService struct {
@@ -30,11 +31,19 @@ func (s *documentService) GetAllDocuments(ctx context.Context) ([]*model.Documen
 	return s.repo.GetAllDocuments(ctx)
 }
 
-func (s *documentService) UpdateDocumentContent(ctx context.Context, updatedDoc *model.Document) (*model.Document, error) {
-	updatedDoc.ID = uuid.New().String()
+func (s *documentService) CreateDocument(ctx context.Context, newDoc *model.Document) (*model.Document, error) {
+	newDoc.ID = uuid.New().String()
+	if newDoc.Title == "" {
+		newDoc.Title = "Untitled Document"
+	}
+
+	return s.repo.CreateDocument(ctx, newDoc)
+}
+
+func (s *documentService) UpdateDocument(ctx context.Context, updatedDoc *model.Document) (*model.Document, error) {
 	if updatedDoc.Title == "" {
 		updatedDoc.Title = "Untitled Document"
 	}
 
-	return s.repo.SaveDocument(ctx, updatedDoc)
+	return s.repo.UpdateDocument(ctx, updatedDoc)
 }

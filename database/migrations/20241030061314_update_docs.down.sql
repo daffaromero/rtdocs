@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS docs;
+DROP TABLE IF EXISTS users;
+DROP INDEX IF EXISTS idx_docs_owner_id;
+DROP INDEX IF EXISTS idx_docs_is_public;

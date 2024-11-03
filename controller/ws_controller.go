@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"rtdocs/model"
+	"rtdocs/model/domain"
 	"rtdocs/service"
 
 	"github.com/google/uuid"
@@ -59,7 +59,7 @@ func (c *webSocketController) HandleConnections(w http.ResponseWriter, r *http.R
 	document, err := c.docService.GetDocument(ctx, c.documentID)
 	if err != nil {
 		log.Printf("Failed to load document: %v", err)
-		document = &model.Document{
+		document = &domain.Document{
 			ID:      c.documentID,
 			Title:   "New Document",
 			Content: "",
@@ -94,7 +94,7 @@ func (c *webSocketController) HandleConnections(w http.ResponseWriter, r *http.R
 			document.Content = update["content"]
 		}
 
-		var updatedDoc model.Document
+		var updatedDoc domain.Document
 		updatedDoc.ID = c.documentID
 		updatedDoc.Title = document.Title
 		updatedDoc.Content = document.Content

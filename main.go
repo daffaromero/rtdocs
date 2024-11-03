@@ -17,8 +17,13 @@ func main() {
 
 	// Set up dependencies
 	docsRepo := repository.NewDocumentRepository(dbConfig)
+	userRepo := repository.NewUserRepository(dbConfig)
+
 	docsService := service.NewDocumentService(docsRepo)
+	userService := service.NewUserService(userRepo)
+
 	docsController := controller.NewDocumentController(docsService)
+	userController := controller.NewUserController(userService)
 	wsController := controller.NewWebSocketController(docsService)
 
 	ctx := context.Background()
@@ -34,6 +39,12 @@ func main() {
 	http.HandleFunc("/api/document/{id}", docsController.GetDocument)
 	http.HandleFunc("/api/document/create", docsController.CreateDocument)
 	http.HandleFunc("/api/document/save", docsController.UpdateDocument)
+
+	// Set up HTTP handlers for user operations
+	http.HandleFunc("/api/user/{id}", userController.GetUser)
+	http.HandleFunc("/api/users", userController.GetAllUsers)
+	http.HandleFunc("/api/user/create", userController.CreateUser)
+	http.HandleFunc("/api/user/update", userController.UpdateUser)
 
 	// Wrap the HTTP handler with the middlewares
 	corsHandler := middleware.CORSMiddleware(http.DefaultServeMux)

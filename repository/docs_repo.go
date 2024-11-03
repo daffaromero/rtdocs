@@ -5,18 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"rtdocs/model"
+	"rtdocs/model/domain"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type DocumentRepository interface {
-	GetDocument(ctx context.Context, id string) (*model.Document, error)
-	GetAllDocuments(ctx context.Context) ([]*model.Document, error)
-	CreateDocument(ctx context.Context, document *model.Document) (*model.Document, error)
-	UpdateDocument(ctx context.Context, document *model.Document) (*model.Document, error)
-	ShareDocument(ctx context.Context, document *model.Document) (*model.Document, error)
+	GetDocument(ctx context.Context, id string) (*domain.Document, error)
+	GetAllDocuments(ctx context.Context) ([]*domain.Document, error)
+	CreateDocument(ctx context.Context, document *domain.Document) (*domain.Document, error)
+	UpdateDocument(ctx context.Context, document *domain.Document) (*domain.Document, error)
+	ShareDocument(ctx context.Context, document *domain.Document) (*domain.Document, error)
 }
 
 type documentRepository struct {
@@ -27,14 +27,14 @@ func NewDocumentRepository(db *pgxpool.Pool) DocumentRepository {
 	return &documentRepository{db: db}
 }
 
-func (q *documentRepository) GetDocument(ctx context.Context, id string) (*model.Document, error) {
+func (q *documentRepository) GetDocument(ctx context.Context, id string) (*domain.Document, error) {
 	if id == "" {
 		log.Println("Document ID is required")
 		return nil, nil
 	}
 	query := "SELECT * FROM docs WHERE id = $1"
 
-	var document model.Document
+	var document domain.Document
 	row := q.db.QueryRow(ctx, query, id)
 
 	if err := row.Scan(&document.ID, &document.Title, &document.Content, &document.OwnerID, &document.IsPublic, &document.CanEdit, &document.CreatedAt, &document.UpdatedAt); err != nil {
@@ -47,7 +47,7 @@ func (q *documentRepository) GetDocument(ctx context.Context, id string) (*model
 	return &document, nil
 }
 
-func (q *documentRepository) GetAllDocuments(ctx context.Context) ([]*model.Document, error) {
+func (q *documentRepository) GetAllDocuments(ctx context.Context) ([]*domain.Document, error) {
 	query := "SELECT * FROM docs"
 	rows, err := q.db.Query(ctx, query)
 	if err != nil {
@@ -55,9 +55,9 @@ func (q *documentRepository) GetAllDocuments(ctx context.Context) ([]*model.Docu
 	}
 	defer rows.Close()
 
-	var documents []*model.Document
+	var documents []*domain.Document
 	for rows.Next() {
-		var document model.Document
+		var document domain.Document
 		if err := rows.Scan(&document.ID, &document.Title, &document.Content, &document.OwnerID, &document.IsPublic, &document.CanEdit, &document.CreatedAt, &document.UpdatedAt); err != nil {
 			return nil, err
 		}
@@ -67,7 +67,7 @@ func (q *documentRepository) GetAllDocuments(ctx context.Context) ([]*model.Docu
 	return documents, nil
 }
 
-func (q *documentRepository) CreateDocument(ctx context.Context, document *model.Document) (*model.Document, error) {
+func (q *documentRepository) CreateDocument(ctx context.Context, document *domain.Document) (*domain.Document, error) {
 	query := "INSERT INTO docs (id, title, content, owner_id, is_public, can_edit, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, title, content, owner_id, is_public, can_edit, created_at, updated_at"
 	if err := q.db.QueryRow(ctx, query, document.ID, document.Title, document.Content, document.OwnerID, document.IsPublic, document.CanEdit, document.CreatedAt, document.UpdatedAt).Scan(&document.ID, &document.Title, &document.Content, &document.OwnerID, &document.IsPublic, &document.CanEdit, &document.CreatedAt, &document.UpdatedAt); err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (q *documentRepository) CreateDocument(ctx context.Context, document *model
 	return document, nil
 }
 
-func (q *documentRepository) UpdateDocument(ctx context.Context, document *model.Document) (*model.Document, error) {
+func (q *documentRepository) UpdateDocument(ctx context.Context, document *domain.Document) (*domain.Document, error) {
 	if document.ID == "" {
 		log.Println("Document ID is required")
 		return nil, errors.New("document ID is required")
@@ -91,7 +91,7 @@ func (q *documentRepository) UpdateDocument(ctx context.Context, document *model
 	return document, nil
 }
 
-func (q *documentRepository) ShareDocument(ctx context.Context, document *model.Document) (*model.Document, error) {
+func (q *documentRepository) ShareDocument(ctx context.Context, document *domain.Document) (*domain.Document, error) {
 	if document.ID == "" {
 		log.Println("Document ID is required")
 		return nil, errors.New("document ID is required")

@@ -9,6 +9,8 @@ import (
 	"rtdocs/middleware"
 	"rtdocs/repository"
 	"rtdocs/service"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -35,32 +37,49 @@ func main() {
 	// Start the WebSocket message handler in a goroutine
 	go wsController.HandleMessages(ctx)
 
+	// Create a new router
+	router := mux.NewRouter()
+
 	// Set up HTTP handler for WebSocket connections
-	http.HandleFunc("/ws", wsController.HandleConnections)
+	router.HandleFunc("/ws", wsController.HandleConnections)
 
 	// Set up HTTP handlers for document operations
-	http.HandleFunc("/api/documents", docsController.GetAllDocuments)
-	http.HandleFunc("/api/document/{id}", docsController.GetDocument)
-	http.HandleFunc("/api/document/create", docsController.CreateDocument)
-	http.HandleFunc("/api/document/save", docsController.UpdateDocument)
+	router.HandleFunc("/api/documents", docsController.GetAllDocuments)
+	router.HandleFunc("/api/document/{id}", docsController.GetDocument)
+	router.HandleFunc("/api/document/create", docsController.CreateDocument)
+	router.HandleFunc("/api/document/save", docsController.UpdateDocument)
 
 	// Set up HTTP handlers for authentication operations
-	http.HandleFunc("/api/auth/register", authController.Register)
-	http.HandleFunc("/api/auth/login", authController.Login)
-	http.HandleFunc("/api/auth/logout", authController.Logout)
+	router.HandleFunc("/api/auth/register", authController.Register)
+	router.HandleFunc("/api/auth/login", authController.Login)
+	router.HandleFunc("/api/auth/logout", authController.Logout)
 
 	// Set up HTTP handlers for user operations
-	http.HandleFunc("/api/user/{id}", userController.GetUser)
-	http.HandleFunc("/api/users", userController.GetAllUsers)
-	http.HandleFunc("/api/user/create", userController.CreateUser)
-	http.HandleFunc("/api/user/update", userController.UpdateUser)
+	router.HandleFunc("/api/user/{id}", userController.GetUser)
+	router.HandleFunc("/api/users", userController.GetAllUsers)
+	router.HandleFunc("/api/user/create", userController.CreateUser)
+	router.HandleFunc("/api/user/update", userController.UpdateUser)
 
 	// Wrap the HTTP handler with the middlewares
-	corsHandler := middleware.CORSMiddleware(http.DefaultServeMux)
-	authHandler := middleware.AuthMiddleware(corsHandler)
+	corsHandler := middleware.CORSMiddleware(router)
+
+	// Create a subrouter for the routes that require authentication
+	authRouter := router.PathPrefix("/api").Subrouter()
+	authRouter.Use(middleware.AuthMiddleware)
+
+	// Set up HTTP handlers for the routes that require authentication
+	authRouter.HandleFunc("/documents", docsController.GetAllDocuments).Methods("GET")
+	authRouter.HandleFunc("/document/{id}", docsController.GetDocument).Methods("GET")
+	authRouter.HandleFunc("/document/create", docsController.CreateDocument).Methods("POST")
+	authRouter.HandleFunc("/document/save", docsController.UpdateDocument).Methods("PUT")
+	authRouter.HandleFunc("/auth/logout", authController.Logout).Methods("POST")
+	authRouter.HandleFunc("/user/{id}", userController.GetUser).Methods("GET")
+	authRouter.HandleFunc("/users", userController.GetAllUsers).Methods("GET")
+	authRouter.HandleFunc("/user/create", userController.CreateUser).Methods("POST")
+	authRouter.HandleFunc("/user/update", userController.UpdateUser).Methods("PUT")
 
 	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", authHandler); err != nil {
+	if err := http.ListenAndServe(":8080", corsHandler); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }

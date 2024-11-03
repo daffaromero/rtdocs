@@ -32,7 +32,12 @@ func (c *authController) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdUser, err := c.authService.Register(ctx, &user)
+	req := &web.RegisterRequest{
+		Username: user.Username,
+		Password: user.Password,
+	}
+
+	createdUser, err := c.authService.Register(ctx, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -46,7 +51,7 @@ func (c *authController) Register(w http.ResponseWriter, r *http.Request) {
 func (c *authController) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var req web.LoginRequest
+	var req *web.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

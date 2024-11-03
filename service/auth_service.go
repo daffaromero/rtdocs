@@ -22,10 +22,9 @@ type authService struct {
 	tokenGen utils.TokenGenerator
 }
 
-func NewAuthService(userRepo repository.UserRepository, tokenGen utils.TokenGenerator) AuthService {
+func NewAuthService(userRepo repository.UserRepository) AuthService {
 	return &authService{
 		userRepo: userRepo,
-		tokenGen: tokenGen,
 	}
 }
 

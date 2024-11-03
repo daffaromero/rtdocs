@@ -18,3 +18,7 @@ type RegisterRequest struct {
 type RegisterResponse struct {
 	UserID string `json:"user_id"`
 }
+
+type LogoutRequest struct {
+	AccessToken string `json:"access_token"`
+}

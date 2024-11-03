@@ -15,14 +15,18 @@ func main() {
 	// Connect to the database
 	dbConfig := config.NewPostgresDatabase()
 
+	// Token generator
+
 	// Set up dependencies
 	docsRepo := repository.NewDocumentRepository(dbConfig)
 	userRepo := repository.NewUserRepository(dbConfig)
 
 	docsService := service.NewDocumentService(docsRepo)
+	authService := service.NewAuthService(userRepo)
 	userService := service.NewUserService(userRepo)
 
 	docsController := controller.NewDocumentController(docsService)
+	authController := controller.NewAuthController(authService)
 	userController := controller.NewUserController(userService)
 	wsController := controller.NewWebSocketController(docsService)
 
@@ -39,6 +43,11 @@ func main() {
 	http.HandleFunc("/api/document/{id}", docsController.GetDocument)
 	http.HandleFunc("/api/document/create", docsController.CreateDocument)
 	http.HandleFunc("/api/document/save", docsController.UpdateDocument)
+
+	// Set up HTTP handlers for authentication operations
+	http.HandleFunc("/api/auth/register", authController.Register)
+	http.HandleFunc("/api/auth/login", authController.Login)
+	http.HandleFunc("/api/auth/logout", authController.Logout)
 
 	// Set up HTTP handlers for user operations
 	http.HandleFunc("/api/user/{id}", userController.GetUser)

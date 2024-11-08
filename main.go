@@ -45,9 +45,9 @@ func main() {
 
 	// Set up HTTP handlers for document operations
 	router.HandleFunc("/api/documents", docsController.GetAllDocuments)
-	router.HandleFunc("/api/document/{id}", docsController.GetDocument)
 	router.HandleFunc("/api/document/create", docsController.CreateDocument)
 	router.HandleFunc("/api/document/save", docsController.UpdateDocument)
+	router.HandleFunc("/api/document/{id}", docsController.GetDocument)
 
 	// Set up HTTP handlers for authentication operations
 	router.HandleFunc("/api/auth/register", authController.Register)
@@ -79,7 +79,7 @@ func main() {
 	authRouter.HandleFunc("/user/update", userController.UpdateUser).Methods("PUT")
 
 	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", corsHandler); err != nil {
+	if err := http.ListenAndServe("localhost:8080", corsHandler); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }

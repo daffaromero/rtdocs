@@ -6,12 +6,17 @@ import (
 	"rtdocs/model/domain"
 	"rtdocs/model/web"
 	"rtdocs/service"
+	"rtdocs/utils"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthController interface {
 	Register(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
+	Guest(w http.ResponseWriter, r *http.Request)
 }
 
 type authController struct {
@@ -83,4 +88,26 @@ func (c *authController) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (c *authController) Guest(w http.ResponseWriter, r *http.Request) {
+	var guestTokenSecret = utils.GetEnv("GUEST_TOKEN_SECRET")
+	guestClaims := jwt.MapClaims{
+		"user_id":  "guest",
+		"username": "guest",
+		"role":     "guest",
+		"exp":      time.Now().Add(24 * time.Hour).Unix(), // Token expiration time
+	}
+	guestToken := jwt.NewWithClaims(jwt.SigningMethodHS256, guestClaims)
+	tokenString, err := guestToken.SignedString([]byte(guestTokenSecret))
+	if err != nil {
+		http.Error(w, "Failed to generate guest token", http.StatusInternalServerError)
+		return
+	}
+
+	// Send the token back to the client
+	w.Header().Set("Authorization", "Bearer "+tokenString)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"token": "` + tokenString + `"}`))
 }

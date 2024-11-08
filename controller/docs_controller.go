@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"rtdocs/model/domain"
 	"rtdocs/service"
@@ -28,12 +27,6 @@ func (c *documentController) GetDocument(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 
 	id := r.PathValue("id")
-	if id == "" {
-		http.Error(w, "Document ID is required", http.StatusBadRequest)
-		return
-	}
-
-	log.Println("Document ID: ", id)
 	if id == "" {
 		http.Error(w, "Document ID is required", http.StatusBadRequest)
 		return

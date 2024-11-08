@@ -60,7 +60,7 @@ func (c *webSocketController) HandleConnections(w http.ResponseWriter, r *http.R
 	if err != nil {
 		log.Printf("Failed to load document: %v", err)
 		document = &domain.Document{
-			ID:      c.documentID,
+			ID:      document.ID,
 			Title:   "New Document",
 			Content: "",
 		}
@@ -95,7 +95,7 @@ func (c *webSocketController) HandleConnections(w http.ResponseWriter, r *http.R
 		}
 
 		var updatedDoc domain.Document
-		updatedDoc.ID = c.documentID
+		updatedDoc.ID = document.ID
 		updatedDoc.Title = document.Title
 		updatedDoc.Content = document.Content
 

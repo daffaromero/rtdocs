@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"log"
 	"rtdocs/model/domain"
 	"rtdocs/repository"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -36,6 +38,12 @@ func (s *documentService) CreateDocument(ctx context.Context, newDoc *domain.Doc
 	if newDoc.Title == "" {
 		newDoc.Title = "Untitled Document"
 	}
+
+	newDoc.IsPublic = false
+	newDoc.CanEdit = true
+	newDoc.CreatedAt = time.Now().String()
+	newDoc.UpdatedAt = time.Now().String()
+	log.Println(newDoc)
 
 	return s.repo.CreateDocument(ctx, newDoc)
 }

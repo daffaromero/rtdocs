@@ -80,6 +80,14 @@ func (q *documentRepository) CreateDocument(ctx context.Context, document *domai
 
 func (q *documentRepository) UpdateDocument(ctx context.Context, document *domain.Document) (*domain.Document, error) {
 	var updatedDoc domain.Document
+	log.Println("ID:", document.ID)
+	log.Println("Title:", document.Title)
+	log.Println("Content:", document.Content)
+	log.Println("OwnerID:", document.OwnerID)
+	log.Println("IsPublic:", document.IsPublic)
+	log.Println("CanEdit:", document.CanEdit)
+	log.Println("UpdatedAt:", document.UpdatedAt)
+
 	if document.ID == "" {
 		return nil, errors.New("document ID is required")
 	}

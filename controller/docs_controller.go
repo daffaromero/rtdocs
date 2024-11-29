@@ -7,6 +7,8 @@ import (
 	"rtdocs/model/domain"
 	"rtdocs/model/web"
 	"rtdocs/service"
+
+	"github.com/gorilla/mux"
 )
 
 type DocumentController interface {
@@ -28,7 +30,8 @@ func NewDocumentController(docService service.DocumentService) DocumentControlle
 func (c *documentController) GetDocument(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	id := r.PathValue("id")
+	vars := mux.Vars(r)
+	id := vars["id"]
 	if id == "" {
 		http.Error(w, "Document ID is required", http.StatusBadRequest)
 		return
@@ -40,8 +43,13 @@ func (c *documentController) GetDocument(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	response := map[string]interface{}{
+		"document": document,
+		"ws_url":   "/ws/" + id, // Include the WebSocket URL in the response
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(document)
+	json.NewEncoder(w).Encode(response)
 }
 
 // GetAllDocuments retrieves all documents

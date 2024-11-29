@@ -8,7 +8,7 @@ import (
 	"rtdocs/model/domain"
 	"rtdocs/service"
 
-	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
@@ -21,7 +21,6 @@ type webSocketController struct {
 	docService service.DocumentService
 	clients    map[*websocket.Conn]bool
 	broadcast  chan map[string]string
-	documentID string
 }
 
 var upgrader = websocket.Upgrader{
@@ -37,7 +36,6 @@ func NewWebSocketController(docService service.DocumentService) *webSocketContro
 		docService: docService,
 		clients:    make(map[*websocket.Conn]bool),
 		broadcast:  make(chan map[string]string),
-		documentID: uuid.New().String(),
 	}
 }
 
@@ -52,15 +50,23 @@ func (c *webSocketController) HandleConnections(w http.ResponseWriter, r *http.R
 
 	c.clients[ws] = true
 
+	vars := mux.Vars(r)
+	documentID := vars["id"]
+	if documentID == "" {
+		log.Printf("Document ID is required")
+		return
+	}
+
 	// Create a new context with the request context
 	ctx := r.Context()
 
 	// Retrieve the current document state and send it to the new client
-	document, err := c.docService.GetDocument(ctx, c.documentID)
+	document, err := c.docService.GetDocument(ctx, documentID)
+	log.Printf("Document ID: %s", documentID)
 	if err != nil {
 		log.Printf("Failed to load document: %v", err)
 		document = &domain.Document{
-			ID:      document.ID,
+			ID:      documentID,
 			Title:   "New Document",
 			Content: "",
 		}

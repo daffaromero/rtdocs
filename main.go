@@ -48,7 +48,7 @@ func main() {
 	router := mux.NewRouter()
 
 	// Set up HTTP handler for WebSocket connections
-	router.HandleFunc("/ws", wsController.HandleConnections)
+	router.HandleFunc("/ws/{id}", wsController.HandleConnections)
 
 	// Set up HTTP handlers for document operations
 	router.HandleFunc("/api/documents", docsController.GetAllDocuments)

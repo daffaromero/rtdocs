@@ -15,6 +15,7 @@ import (
 
 type AuthService interface {
 	Register(ctx context.Context, req *web.RegisterRequest) (*web.RegisterResponse, error)
+	GuestRegister(ctx context.Context, req *web.RegisterRequest) (*web.RegisterResponse, error)
 	Login(ctx context.Context, req *web.LoginRequest) (*web.LoginResponse, error)
 	Logout(ctx context.Context, accessToken string) error
 }
@@ -24,9 +25,10 @@ type authService struct {
 	tokenGen utils.TokenGenerator
 }
 
-func NewAuthService(userRepo repository.UserRepository) AuthService {
+func NewAuthService(userRepo repository.UserRepository, tokenGen utils.TokenGenerator) AuthService {
 	return &authService{
 		userRepo: userRepo,
+		tokenGen: tokenGen,
 	}
 }
 
@@ -39,7 +41,7 @@ func (s *authService) Register(ctx context.Context, req *web.RegisterRequest) (*
 		ID:        uuid.New().String(),
 		Username:  req.Username,
 		Role:      "user",
-		CreatedAt: time.Now().Local().Format(time.RFC3339),
+		CreatedAt: time.Now(),
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -62,6 +64,29 @@ func (s *authService) Register(ctx context.Context, req *web.RegisterRequest) (*
 		UserID:       createdUser.ID,
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
+	}, nil
+}
+
+func (s *authService) GuestRegister(ctx context.Context, req *web.RegisterRequest) (*web.RegisterResponse, error) {
+	var guestUser domain.User
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	guestUser.ID = uuid.New().String()
+	guestUser.Username = "guest" + guestUser.ID
+	guestUser.Password = string(hashedPassword)
+	guestUser.Role = "guest"
+	guestUser.CreatedAt = time.Now()
+
+	createdGuest, err := s.userRepo.CreateUser(ctx, &guestUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return &web.RegisterResponse{
+		UserID: createdGuest.ID,
 	}, nil
 }
 

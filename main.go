@@ -9,8 +9,15 @@ import (
 	"rtdocs/middleware"
 	"rtdocs/repository"
 	"rtdocs/service"
+	"rtdocs/utils"
 
 	"github.com/gorilla/mux"
+)
+
+var (
+	secretKey       = utils.GetEnv("SECRET_KEY")
+	accessDuration  = utils.GetEnv("ACCESS_TOKEN_DURATION")
+	refreshDuration = utils.GetEnv("REFRESH_TOKEN_DURATION")
 )
 
 func main() {
@@ -24,7 +31,7 @@ func main() {
 	userRepo := repository.NewUserRepository(dbConfig)
 
 	docsService := service.NewDocumentService(docsRepo)
-	authService := service.NewAuthService(userRepo)
+	authService := service.NewAuthService(userRepo, utils.NewTokenGenerator(secretKey, accessDuration, refreshDuration))
 	userService := service.NewUserService(userRepo)
 
 	docsController := controller.NewDocumentController(docsService)
@@ -53,6 +60,7 @@ func main() {
 	router.HandleFunc("/api/auth/register", authController.Register)
 	router.HandleFunc("/api/auth/login", authController.Login)
 	router.HandleFunc("/api/auth/logout", authController.Logout)
+	router.HandleFunc("/api/auth/guest", authController.Guest)
 
 	// Set up HTTP handlers for user operations
 	router.HandleFunc("/api/user/{id}", userController.GetUser)

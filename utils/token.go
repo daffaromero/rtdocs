@@ -20,11 +20,11 @@ type TokenGenerator interface {
 
 type tokenGenerator struct {
 	secretKey            string
-	accessTokenDuration  time.Duration
-	refreshTokenDuration time.Duration
+	accessTokenDuration  string
+	refreshTokenDuration string
 }
 
-func NewTokenGenerator(secretKey string, accessTokenDuration, refreshTokenDuration time.Duration) TokenGenerator {
+func NewTokenGenerator(secretKey, accessTokenDuration, refreshTokenDuration string) TokenGenerator {
 	return &tokenGenerator{
 		secretKey:            secretKey,
 		accessTokenDuration:  accessTokenDuration,
@@ -33,10 +33,19 @@ func NewTokenGenerator(secretKey string, accessTokenDuration, refreshTokenDurati
 }
 
 func (t *tokenGenerator) GenerateToken(ID, username string) (*Token, error) {
+	durationAccess, err := time.ParseDuration(t.accessTokenDuration)
+	if err != nil {
+		return nil, err
+	}
+	durationRefresh, err := time.ParseDuration(t.refreshTokenDuration)
+	if err != nil {
+		return nil, err
+	}
+
 	claims := jwt.MapClaims{
 		"user_id":  ID,
 		"username": username,
-		"exp":      time.Now().Add(t.accessTokenDuration).Unix(),
+		"exp":      time.Now().Add(durationAccess).Unix(),
 	}
 
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -45,7 +54,7 @@ func (t *tokenGenerator) GenerateToken(ID, username string) (*Token, error) {
 		return nil, err
 	}
 
-	claims["exp"] = time.Now().Add(t.refreshTokenDuration).Unix()
+	claims["exp"] = time.Now().Add(durationRefresh).Unix()
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	refreshTokenString, err := refreshToken.SignedString([]byte(t.secretKey))
 	if err != nil {

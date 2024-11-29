@@ -91,13 +91,24 @@ func (c *authController) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *authController) Guest(w http.ResponseWriter, r *http.Request) {
+	var userRequest web.RegisterRequest
 	var guestTokenSecret = utils.GetEnv("GUEST_TOKEN_SECRET")
-	guestClaims := jwt.MapClaims{
-		"user_id":  "guest",
-		"username": "guest",
-		"role":     "guest",
-		"exp":      time.Now().Add(24 * time.Hour).Unix(), // Token expiration time
+
+	userRequest.Username = "guest"
+	userRequest.Password = "guest"
+	guest, err := c.authService.GuestRegister(r.Context(), &userRequest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	guestClaims := jwt.MapClaims{
+		"user_id":  guest.UserID,
+		"username": userRequest.Username,
+		"role":     "guest",
+		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+	}
+
 	guestToken := jwt.NewWithClaims(jwt.SigningMethodHS256, guestClaims)
 	tokenString, err := guestToken.SignedString([]byte(guestTokenSecret))
 	if err != nil {

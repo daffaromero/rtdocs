@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"rtdocs/model/domain"
 
 	"github.com/jackc/pgx/v4"
@@ -70,7 +71,8 @@ func (q *documentRepository) CreateDocument(ctx context.Context, document *domai
 	query := "INSERT INTO docs (id, title, content, owner_id, is_public, can_edit, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, title, content, owner_id, is_public, can_edit, created_at, updated_at"
 	row := q.db.QueryRow(ctx, query, document.ID, document.Title, document.Content, document.OwnerID, document.IsPublic, document.CanEdit, document.CreatedAt, document.UpdatedAt)
 	if err := row.Scan(&newDoc.ID, &newDoc.Title, &newDoc.Content, &newDoc.OwnerID, &newDoc.IsPublic, &newDoc.CanEdit, &newDoc.CreatedAt, &newDoc.UpdatedAt); err != nil {
-		return nil, err
+		log.Println(err)
+		// return nil, err
 	}
 
 	return &newDoc, nil

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type contextKey string
@@ -21,8 +22,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			guestClaims := jwt.MapClaims{
-				"user_id":  "guest",
-				"username": "guest",
+				"user_id":  uuid.New().String(),
+				"username": "guestFromMiddleware",
 				"role":     "guest",
 				"exp":      time.Now().Add(time.Hour * 24).Unix(),
 			}

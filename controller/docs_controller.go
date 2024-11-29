@@ -2,8 +2,10 @@ package controller
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"rtdocs/model/domain"
+	"rtdocs/model/web"
 	"rtdocs/service"
 )
 
@@ -59,13 +61,14 @@ func (c *documentController) GetAllDocuments(w http.ResponseWriter, r *http.Requ
 func (c *documentController) CreateDocument(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var document domain.Document
-	if err := json.NewDecoder(r.Body).Decode(&document); err != nil {
-		http.Error(w, "Invalid document data", http.StatusBadRequest)
+	var request *web.CreateDocument
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Invalid create document request", http.StatusBadRequest)
 		return
 	}
 
-	createdDoc, err := c.docService.CreateDocument(ctx, &document)
+	createdDoc, err := c.docService.CreateDocument(ctx, request)
+	log.Println("Created document:", createdDoc)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
